@@ -1,78 +1,81 @@
-import { useState } from 'react';
-import { Message, getMessage } from '../data/messages';
 import {
-  IonBackButton,
-  IonButtons,
   IonContent,
   IonHeader,
-  IonIcon,
-  IonItem,
-  IonLabel,
-  IonNote,
   IonPage,
+  IonTitle,
   IonToolbar,
-  useIonViewWillEnter,
-} from '@ionic/react';
-import { personCircle } from 'ionicons/icons';
-import { useParams } from 'react-router';
-import './ViewMessage.css';
+  IonImg,
+  IonIcon,
+  IonCard,
+} from "@ionic/react";
+import Axios from "axios";
+import { useEffect, useState } from "react";
+import { useParams } from "react-router";
+import { mailOutline, briefcaseOutline } from "ionicons/icons";
+import "./ViewMessage.css";
 
-function ViewMessage() {
-  const [message, setMessage] = useState<Message>();
-  const params = useParams<{ id: string }>();
+const ViewMessage: React.FC = () => {
+  const [userProfile, setUserProfile] = useState<any>({});
+  const { id }: any = useParams();
 
-  useIonViewWillEnter(() => {
-    const msg = getMessage(parseInt(params.id, 10));
-    setMessage(msg);
-  });
+  const setUserProfileToState = async () => {
+    const data = await Axios.get(
+      "https://api.jsonbin.io/b/610d090de1b0604017a7a605"
+    );
+    const userResponse = data.data.filter((item: any) => item.id == id);
+    setUserProfile(userResponse);
+  };
+
+  useEffect(() => {
+    setUserProfileToState();
+    console.log(id);
+  }, []);
 
   return (
-    <IonPage id="view-message-page">
-      <IonHeader translucent>
+    <IonPage>
+      <IonHeader>
         <IonToolbar>
-          <IonButtons slot="start">
-            <IonBackButton text="Inbox" defaultHref="/home"></IonBackButton>
-          </IonButtons>
+          <IonTitle>Detail Person</IonTitle>
         </IonToolbar>
       </IonHeader>
-
       <IonContent fullscreen>
-        {message ? (
+        <IonHeader collapse="condense">
+          <IonToolbar>
+            <IonTitle size="large">Detail Person</IonTitle>
+          </IonToolbar>
+        </IonHeader>
+        {userProfile.length > 0 && (
           <>
-            <IonItem>
-              <IonIcon icon={personCircle} color="primary"></IonIcon>
-              <IonLabel className="ion-text-wrap">
-                <h2>
-                  {message.fromName}
-                  <span className="date">
-                    <IonNote>{message.date}</IonNote>
-                  </span>
-                </h2>
-                <h3>
-                  To: <IonNote>Me</IonNote>
-                </h3>
-              </IonLabel>
-            </IonItem>
-
-            <div className="ion-padding">
-              <h1>{message.subject}</h1>
-              <p>
-                Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
-                eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
-                enim ad minim veniam, quis nostrud exercitation ullamco laboris
-                nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor
-                in reprehenderit in voluptate velit esse cillum dolore eu fugiat
-                nulla pariatur. Excepteur sint occaecat cupidatat non proident,
-                sunt in culpa qui officia deserunt mollit anim id est laborum.
-              </p>
-            </div>
+          <IonCard>
+            <IonImg
+              style={{
+                width: "80px",
+                height: "80px",
+                margin: "0 auto",
+                marginTop: "40px",
+              }}
+              src={userProfile[0].avatar}
+            />
+            <h1 style={{ textAlign: "center" }}>
+              {userProfile[0].first_name} {userProfile[0].last_name}
+            </h1>
+            <h4 className="ion-text-center">
+              <IonIcon icon={mailOutline} style={{ marginRight: 10 }}></IonIcon>
+              {userProfile[0].email}
+            </h4>
+            <h4 className="ion-text-center">
+              <IonIcon
+                icon={briefcaseOutline}
+                style={{ marginRight: 10 }}
+              ></IonIcon>
+              {userProfile[0].company}
+            </h4>
+            </IonCard>
           </>
-        ) : (
-          <div>Message not found</div>
         )}
       </IonContent>
     </IonPage>
   );
-}
+};
 
 export default ViewMessage;

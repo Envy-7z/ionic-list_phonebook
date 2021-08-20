@@ -1,57 +1,84 @@
-import MessageListItem from '../components/MessageListItem';
-import { useState } from 'react';
-import { Message, getMessages } from '../data/messages';
 import {
   IonContent,
   IonHeader,
-  IonList,
   IonPage,
-  IonRefresher,
-  IonRefresherContent,
   IonTitle,
   IonToolbar,
-  useIonViewWillEnter
-} from '@ionic/react';
-import './Home.css';
+  IonList,
+  IonAvatar,
+  IonItem,
+  IonLabel,
+  IonIcon,
+} from "@ionic/react";
+import { mailOutline, briefcaseOutline } from "ionicons/icons";
+import Axios from "axios";
+import { useState, useEffect } from "react";
+import "./Home.css";
+import { Link } from "react-router-dom";
 
 const Home: React.FC = () => {
+  const [userProfile, setUserProfile] = useState<any>({});
+  const [isExists, setisExists] = useState(false);
 
-  const [messages, setMessages] = useState<Message[]>([]);
-
-  useIonViewWillEnter(() => {
-    const msgs = getMessages();
-    setMessages(msgs);
-  });
-
-  const refresh = (e: CustomEvent) => {
-    setTimeout(() => {
-      e.detail.complete();
-    }, 3000);
+  const setUserProfileToState = async () => {
+    const data = await Axios.get(
+      "https://api.jsonbin.io/b/610d090de1b0604017a7a605"
+    );
+    const userResponse = data.data;
+    setUserProfile(userResponse);
+    setisExists(true);
   };
 
+  useEffect(() => {
+    setUserProfileToState();
+  }, []);
+
   return (
-    <IonPage id="home-page">
+    <IonPage>
       <IonHeader>
         <IonToolbar>
-          <IonTitle>Inbox</IonTitle>
+          <IonTitle>List Phonebook</IonTitle>
         </IonToolbar>
       </IonHeader>
       <IonContent fullscreen>
-        <IonRefresher slot="fixed" onIonRefresh={refresh}>
-          <IonRefresherContent></IonRefresherContent>
-        </IonRefresher>
-
         <IonHeader collapse="condense">
           <IonToolbar>
-            <IonTitle size="large">
-              Inbox
-            </IonTitle>
+            <IonTitle size="large">Home</IonTitle>
           </IonToolbar>
         </IonHeader>
-
-        <IonList>
-          {messages.map(m => <MessageListItem key={m.id} message={m} />)}
-        </IonList>
+        {userProfile.length > 0 && (
+          <>
+            {userProfile.map((data: any) => (
+              <IonList key={userProfile.id}>
+                <Link
+                  to={`/detail/${data.id}`}
+                  style={{ textDecoration: "none" }}
+                >
+                  <IonItem>
+                    <IonAvatar>
+                      <img src={data.avatar} alt="" />
+                    </IonAvatar>
+                    <IonLabel className="ion-padding">
+                      <h3>
+                        {data.first_name} {data.last_name}{" "}
+                      </h3>
+                      <h3 className="ion-padding-top">
+                        <IonIcon icon={mailOutline}></IonIcon>
+                        <span className="ion-padding-start">{data.email}</span>
+                      </h3>
+                      <h3 className="ion-padding-top">
+                        <IonIcon icon={briefcaseOutline}></IonIcon>
+                        <span className="ion-padding-start">
+                          {data.company}
+                        </span>
+                      </h3>
+                    </IonLabel>
+                  </IonItem>
+                </Link>
+              </IonList>
+            ))}
+          </>
+        )}
       </IonContent>
     </IonPage>
   );
