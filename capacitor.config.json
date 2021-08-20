@@ -1,0 +1,6 @@
+{
+	"appId": "io.ionic.starter",
+	"appName": "PhoneBook",
+	"webDir": "build",
+	"bundledWebRuntime": false
+}
